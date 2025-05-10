@@ -4,19 +4,19 @@
   "version": "1.0",
   "name": "Pause - Digital Mindfulness",
   "description": "A gentle reminder to take mindful pauses during your digital life",
-  "author": "Your Name",
+  "author": "BaNaNa",
   "permissions": ["storage", "activeTab"],
   "action": {
-    "default_popup": "/src/popup.html",
+    "default_popup": "/src/popup/index.html",
     "default_icon": {
-      "16": "public/icon16.png",
-      "48": "public/icon48.png",
-      "128": "public/icon128.png"
+      "16": "/icon/icon16.png",
+      "48": "/icon/icon48.png",
+      "128": "/icon/icon128.png"
     }
   },
   "icons": {
-    "16": "public/icon16.png",
-    "48": "public/icon48.png",
-    "128": "public/icon128.png"
+    "16": "/icon/icon16.png",
+    "48": "/icon/icon48.png",
+    "128": "/icon/icon128.png"
   }
 }
