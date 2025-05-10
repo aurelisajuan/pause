@@ -5,9 +5,9 @@
     "url": "https://github.com/extension-js/extension.git",
     "directory": "examples/init"
   },
-  "name": "init",
-  "description": "An Extension.js example.",
-  "version": "0.0.1",
+  "name": "pause-extension",
+  "description": "A digital mindfulness reminder for everyday life",
+  "version": "1.0.0",
   "keywords": [
     "extension",
     "browser-extension",
@@ -17,11 +17,16 @@
   "scripts": {
     "dev": "extension dev",
     "start": "extension start",
-    "build": "extension build"
+    "build": "tsc",
+    "watch": "tsc -w"
   },
-  "dependencies": {},
   "devDependencies": {
-    "extension": "^2.0.0-rc.23"
+    "autoprefixer": "^10.4.21",
+    "extension": "^2.0.0-rc.23",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.6",
+    "typescript": "^5.3.3",
+    "@types/chrome": "^0.0.260"
   },
   "private": true,
   "author": {
