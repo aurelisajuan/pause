@@ -1,9 +1,22 @@
 {
-  "name": "pause",
-  "description": "a gentle reminder for users to pause and stay present",
-  "version": "1.0",
+  "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "manifest_version": 3,
+  "version": "1.0",
+  "name": "Pause - Digital Mindfulness",
+  "description": "A gentle reminder to take mindful pauses during your digital life",
+  "author": "BaNaNa",
+  "permissions": ["storage", "activeTab"],
   "action": {
-    "default_popup": "src/index.html"
+    "default_popup": "src/popup.html", 
+    "default_icon": {
+      "16": "icons/icon16.png",  
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }
