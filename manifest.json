@@ -1,0 +1,9 @@
+{
+    "name": "Pause",
+    "description": "a gentle reminder for users to pause and stay present",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+        "default_popup": "entrypoints/popup/index.tsx"
+    }
+}
