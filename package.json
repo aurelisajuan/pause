@@ -21,12 +21,12 @@
     "watch": "tsc -w"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.260",
     "autoprefixer": "^10.4.21",
     "extension": "^2.0.0-rc.23",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.6",
-    "typescript": "^5.3.3",
-    "@types/chrome": "^0.0.260"
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.3.3"
   },
   "private": true,
   "author": {
