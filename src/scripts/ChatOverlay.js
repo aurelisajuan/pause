@@ -12,7 +12,7 @@ const OVERLAY_STYLES = `
     position: absolute;
     top: 0;
     right: 0;
-    padding: 1.5rem;
+    padding: 1rem;
     z-index: 10;
 }
 
@@ -20,8 +20,8 @@ const OVERLAY_STYLES = `
     background: transparent;
     border: none;
     color: rgba(255,255,255,0.7);
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -38,8 +38,8 @@ const OVERLAY_STYLES = `
 }
 
 .pause-close-button svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
 }
 
 .pause-chatbot-container {
@@ -48,49 +48,51 @@ const OVERLAY_STYLES = `
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: 1000px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1.5rem;
     animation: pause-text-fade 0.5s ease-out;
-}
-
-.pause-logo {
-    width: 200px;
-    margin-bottom: 2rem;
 }
 
 .pause-title {
     color: white;
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     font-weight: 500;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-align: center;
     line-height: 1.2;
 }
 
+.pause-title em {
+    font-style: italic;
+    color: #22d3ee;
+}
+
 .pause-subtitle {
     color: white;
-    font-size: 2.5rem;
-    margin-bottom: 2.5rem;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
     text-align: center;
 }
 
 .pause-buttons {
     display: flex;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .pause-button {
     background: transparent;
     border: 2px solid #22d3ee;
     color: white;
-    padding: 1rem 2rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 9999px;
-    font-size: 1.25rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 200px;
+    min-width: 160px;
     text-align: center;
 }
 
@@ -100,16 +102,22 @@ const OVERLAY_STYLES = `
     box-shadow: 0 4px 12px rgba(34,211,238,0.3);
 }
 
-.pause-search {
+.input-container {
     width: 100%;
-    max-width: 700px;
+    max-width: 600px;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.pause-search {
+    flex: 1;
     background: rgba(34,211,238,0.1);
     border: 2px solid rgba(34,211,238,0.3);
     border-radius: 9999px;
-    padding: 1.25rem 2rem;
+    padding: 0.75rem 1.5rem;
     color: white;
-    font-size: 1.25rem;
-    margin-bottom: 2.5rem;
+    font-size: 1rem;
     transition: all 0.2s;
 }
 
@@ -124,14 +132,39 @@ const OVERLAY_STYLES = `
     color: rgba(255,255,255,0.6);
 }
 
+.send-button, .mic-button {
+    background: transparent;
+    border: 2px solid #22d3ee;
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.send-button:hover, .mic-button:hover {
+    background: rgba(34,211,238,0.2);
+    transform: translateY(-2px);
+}
+
+.send-button svg, .mic-button svg {
+    width: 16px;
+    height: 16px;
+}
+
 .transcript-toggle {
     background: transparent;
     border: none;
     color: rgba(255,255,255,0.7);
-    font-size: 1rem;
+    font-size: 0.9rem;
     cursor: pointer;
     padding: 0.5rem 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -143,8 +176,8 @@ const OVERLAY_STYLES = `
 }
 
 .transcript-toggle svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     transition: transform 0.2s;
 }
 
@@ -154,37 +187,36 @@ const OVERLAY_STYLES = `
 
 .chat-messages {
     width: 100%;
-    max-width: 700px;
+    max-width: 600px;
     max-height: 0;
     overflow: hidden;
-    padding: 0;
     transition: all 0.3s ease-out;
 }
 
 .chat-messages.open {
-    max-height: 400px;
+    max-height: 300px;
     overflow-y: auto;
     padding: 1rem;
 }
 
 .chat-message {
-    margin-bottom: 1rem;
-    padding: 1rem 1.5rem;
-    border-radius: 1rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
     color: white;
-    font-size: 1.1rem;
-    line-height: 1.5;
+    font-size: 0.95rem;
+    line-height: 1.4;
 }
 
 .chat-message.user {
     background: rgba(34,211,238,0.2);
-    margin-left: 2rem;
+    margin-left: 1.5rem;
     border-bottom-right-radius: 0.25rem;
 }
 
 .chat-message.assistant {
     background: rgba(0,0,0,0.3);
-    margin-right: 2rem;
+    margin-right: 1.5rem;
     border-bottom-left-radius: 0.25rem;
 }
 `;
@@ -372,18 +404,18 @@ class ChatOverlay {
             
             .input-container {
                 width: 100%;
-                max-width: 700px;
+                max-width: 600px;
                 display: flex;
-                gap: 10px;
-                margin-bottom: 2.5rem;
+                gap: 0.5rem;
+                margin-bottom: 1.5rem;
             }
             
             .send-button, .mic-button {
                 background: transparent;
                 border: 2px solid #22d3ee;
                 color: white;
-                width: 45px;
-                height: 45px;
+                width: 38px;
+                height: 38px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -398,8 +430,8 @@ class ChatOverlay {
             }
             
             .send-button svg, .mic-button svg {
-                width: 20px;
-                height: 20px;
+                width: 16px;
+                height: 16px;
             }
             
             #youtube-player {
