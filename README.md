@@ -25,12 +25,10 @@ In our always-on digital world, everyone—from students juggling tabs to profes
 - **Backend & API:** Leveraged Chrome Extension APIs and background scripts as our backend, managing cross-component logic, tab updates, and persistent state without relying on a traditional server.
 - **Prototype:** Crafted in Figma to nail down timing algorithms and micro-interactions before writing a single line of code.
 
-
-
 ## Challenges We Ran Into
 - **Optimal Timing**: Finding the perfect interval for micro-pauses so they feel supportive rather than disruptive.
 - **Consistent Multi-Modal Experience**: Crafting visual, audio, and silent reminder modes that all convey the same sense of calm.
-- **Pure Simplicity**:Distilling every design element to its emotional essence—whether it’s a single quote card or a soft gradient.
+- **Pure Simplicity**: Distilling every design element to its emotional essence—whether it’s a single quote card or a soft gradient.
 - **Lean Extension Architecture**: Integrating React, TypeScript, and Tailwind into a Chrome Extension scaffold without bloating our bundle.
 
 ## Accomplishments That We're Proud Of
