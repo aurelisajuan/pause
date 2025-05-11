@@ -1,7 +1,31 @@
 import React from "react";
-import "./styles.css";
+import "../styles.css";
+import GlowPage from "./GlowPage";
 
 const PopupApp: React.FC = () => {
+  const [showGlow, setShowGlow] = React.useState(false);
+  const [glowDuration, setGlowDuration] = React.useState(3000);
+
+  const handleGetStarted = async () => {
+    // Call backend to get glow duration
+    try {
+      const res = await fetch("http://localhost:3001/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      setGlowDuration(data.glowDuration || 3000);
+    } catch (e) {
+      setGlowDuration(3000);
+    }
+    setShowGlow(true);
+  };
+
+  if (showGlow) {
+    return <GlowPage glowDuration={glowDuration} />;
+  }
+
   return (
     <div className="w-[400px] flex flex-col justify-between items-center bg-[#101914] relative overflow-hidden">
       {/* Glow border */}
@@ -41,7 +65,10 @@ const PopupApp: React.FC = () => {
             </span>
           </div>
 
-          <button className="mt-8 w-full py-3 rounded-full border-4 border-cyan-400 bg-[#101914] text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors">
+          <button
+            className="mt-8 w-full py-3 rounded-full border-4 border-cyan-400 bg-[#101914] text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors"
+            onClick={handleGetStarted}
+          >
             Get Started
           </button>
         </div>

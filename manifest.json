@@ -5,7 +5,11 @@
   "name": "Pause - Digital Mindfulness",
   "description": "A gentle reminder to take mindful pauses during your digital life",
   "author": "BaNaNa",
-  "permissions": ["storage", "activeTab"],
+  "permissions": [
+    "storage", 
+    "activeTab",
+    "system.display"
+  ],
   "action": {
     "default_popup": "src/popup/index.html", 
     "default_icon": {

@@ -37,5 +37,9 @@
     "name": "Your Name",
     "email": "your@email.com",
     "url": "https://yourwebsite.com"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
   }
 }
