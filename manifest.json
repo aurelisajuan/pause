@@ -10,11 +10,15 @@
     "activeTab",
     "system.display",
     "tab"
-  ],
+  ], 
+  "background": {
+    "service_worker": "src/scripts/background.js"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"], 
-      "js": ["src/scripts/content.js"] 
+      "js": ["src/scripts/content.js"],
+      "run_at": "document_idle"
     }
   ],
   "action": {
