@@ -43,6 +43,7 @@
     "url": "https://yourwebsite.com"
   },
   "dependencies": {
+    "@google/genai": "^0.13.0",
     "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
