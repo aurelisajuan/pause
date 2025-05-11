@@ -1,9 +1,4 @@
-import React, {
-    useState,
-    useRef,
-    useEffect,
-    useCallback,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GEMINI_API_KEY } from "../config";
 import "../styles.css";
@@ -95,9 +90,7 @@ const ChatBot: React.FC = () => {
             const ai = new GoogleGenerativeAI(GEMINI_API_KEY);
             const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
             const session = await model.startChat({
-            history: [
-                { role: "user", parts: [{ text: SYSTEM_INSTRUCTION }] },
-            ],
+            history: [{ role: "user", parts: [{ text: SYSTEM_INSTRUCTION }] }],
             generationConfig: {
                 maxOutputTokens: 800,
                 temperature: 0.8,
@@ -109,7 +102,7 @@ const ChatBot: React.FC = () => {
 
             // seed initial assistant message & speak it
             const greeting =
-            "Hi there! I’m your mindfulness companion. How are you feeling about your screen time today?";
+            "Hi there! I'm your mindfulness companion. How are you feeling about your screen time today?";
             setMessages([{ role: "assistant", content: greeting }]);
             setTimeout(() => speakText(greeting), 500);
         } catch (e: any) {
@@ -131,14 +124,10 @@ const ChatBot: React.FC = () => {
         utterance.volume = 1;
         const voice = synth
             .getVoices()
-            .find((v) =>
-            /Samantha|Google US English Female|Female/.test(v.name)
-            );
+            .find((v) => /Samantha|Google US English Female|Female/.test(v.name));
         if (voice) utterance.voice = voice;
-        utterance.onstart = () =>
-            setContext((c) => ({ ...c, isSpeaking: true }));
-        utterance.onend = () =>
-            setContext((c) => ({ ...c, isSpeaking: false }));
+        utterance.onstart = () => setContext((c) => ({ ...c, isSpeaking: true }));
+        utterance.onend = () => setContext((c) => ({ ...c, isSpeaking: false }));
         utterance.onerror = () =>
             setContext((c) => ({ ...c, isSpeaking: false }));
         synth.cancel();
@@ -148,29 +137,37 @@ const ChatBot: React.FC = () => {
     );
 
     // 4) Update context heuristically
-    const updateContext = useCallback(
-        (userMsg: string, aiMsg: string) => {
+    const updateContext = useCallback((userMsg: string, aiMsg: string) => {
         setContext((c) => {
-            let topic = c.currentTopic,
+        let topic = c.currentTopic,
             mood = c.userMood,
             last = c.lastActivity;
 
-            if (/feel|mood/i.test(userMsg)) topic = "emotional";
-            else if (/breath|exercise/i.test(userMsg))
-            topic = "mindful_exercise";
+        if (/feel|mood/i.test(userMsg)) topic = "emotional";
+        else if (/breath|exercise/i.test(userMsg)) topic = "mindful_exercise";
 
-            if (/stress|anxious/i.test(userMsg)) mood = "stressed";
-            else if (/happy|good/i.test(userMsg)) mood = "positive";
+        if (/stress|anxious/i.test(userMsg)) mood = "stressed";
+        else if (/happy|good/i.test(userMsg)) mood = "positive";
 
-            if (/breathe|exercise/i.test(aiMsg)) last = "breathing";
+        if (/breathe|exercise/i.test(aiMsg)) last = "breathing";
 
-            return { ...c, currentTopic: topic, userMood: mood, lastActivity: last };
+        return { ...c, currentTopic: topic, userMood: mood, lastActivity: last };
         });
-        },
-        []
-    );
+    }, []);
 
-    // 5) sendMessage callback
+    // Add function to trigger glow effect
+    const triggerGlowEffect = useCallback((duration: number = 3000) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+            action: "startScan",
+            glowDuration: duration,
+            });
+        }
+        });
+    }, []);
+
+    // Modified sendMessage to include glow effect for certain responses
     const sendMessage = useCallback(
         async (forced?: string) => {
         const text = (forced ?? input).trim();
@@ -187,43 +184,46 @@ const ChatBot: React.FC = () => {
 
         try {
             const prompt = `
-                Topic: ${context.currentTopic}
-                Mood: ${context.userMood}
+                        Topic: ${context.currentTopic}
+                        Mood: ${context.userMood}
 
-                User: ${text}
+                        User: ${text}
 
-                Please respond warmly and ask a follow-up question.
-            `.trim();
+                        Please respond warmly and ask a follow-up question.
+                    `.trim();
 
             const res = await chatSession.sendMessage(prompt);
             const aiReply = await res.response.text();
 
-            setMessages((ms) => [
-            ...ms,
-            { role: "assistant", content: aiReply },
-            ]);
+            setMessages((ms) => [...ms, { role: "assistant", content: aiReply }]);
             updateContext(text, aiReply);
             speakText(aiReply);
+
+            // Trigger glow effect for breathing exercises or calming moments
+            if (
+            /breathe|relax|calm|pause|mindful/i.test(aiReply) ||
+            context.currentTopic === "mindful_exercise"
+            ) {
+            triggerGlowEffect(5000); // 5 seconds for mindful moments
+            }
         } catch (e: any) {
             console.error(e);
             const msg = "Oops, something went wrong. Could we try again?";
-            setMessages((ms) => [
-            ...ms,
-            { role: "assistant", content: msg },
-            ]);
+            setMessages((ms) => [...ms, { role: "assistant", content: msg }]);
             speakText(msg);
         } finally {
             setIsLoading(false);
         }
         },
         [
-            chatSession,
-            context,
-            input,
-            isLoading,
-            synth,
-            speakText,
-            updateContext,
+        chatSession,
+        context,
+        input,
+        isLoading,
+        synth,
+        speakText,
+        updateContext,
+        triggerGlowEffect,
         ]
     );
 
@@ -240,10 +240,8 @@ const ChatBot: React.FC = () => {
         recog.interimResults = false;
         recog.lang = "en-US";
 
-        recog.onstart = () =>
-        setContext((c) => ({ ...c, isListening: true }));
-        recog.onend = () =>
-        setContext((c) => ({ ...c, isListening: false }));
+        recog.onstart = () => setContext((c) => ({ ...c, isListening: true }));
+        recog.onend = () => setContext((c) => ({ ...c, isListening: false }));
         recog.onerror = (ev: any) => {
         console.error("SpeechRecognition error", ev);
         setError(
@@ -267,10 +265,10 @@ const ChatBot: React.FC = () => {
         setError(null);
 
         try {
-            recognitionRef.current?.start();
+        recognitionRef.current?.start();
         } catch (e) {
-            console.error(e);
-            setError("Voice recognition not supported or failed to start.");
+        console.error(e);
+        setError("Voice recognition not supported or failed to start.");
         }
     };
 
@@ -287,9 +285,7 @@ const ChatBot: React.FC = () => {
         <div className="flex flex-col w-[400px] h-[600px] bg-gray-900 rounded-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
-            <h2 className="text-white font-semibold">
-            Mindfulness Assistant
-            </h2>
+            <h2 className="text-white font-semibold">Mindfulness Assistant</h2>
         </div>
 
         {/* Messages */}
@@ -325,9 +321,7 @@ const ChatBot: React.FC = () => {
             rows={1}
             className="flex-1 bg-gray-700 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none"
             placeholder={
-                context.isListening
-                ? "Listening…"
-                : "Type or 🎙️ to speak"
+                context.isListening ? "Listening…" : "Type or 🎙️ to speak"
             }
             value={input}
             onChange={onInputChange}
@@ -342,16 +336,10 @@ const ChatBot: React.FC = () => {
             <button
             onClick={startListening}
             className={`p-2 rounded-full transition ${
-                context.isListening
-                ? "bg-red-500"
-                : "bg-gray-700 hover:bg-gray-600"
+                context.isListening ? "bg-red-500" : "bg-gray-700 hover:bg-gray-600"
             }`}
             disabled={isLoading}
-            title={
-                context.isListening
-                ? "Listening…"
-                : "Start voice input"
-            }
+            title={context.isListening ? "Listening…" : "Start voice input"}
             >
             🎙️
             </button>

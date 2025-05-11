@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import ChatBot from '../popup/ChatBot';
-import '../styles.css';
+import React, { useEffect, useState } from "react";
+import ChatBot from "../popup/ChatBot";
+import "../styles.css";
+import "./overlay.css";
 
 interface Bounds {
   left: number;
@@ -15,6 +16,7 @@ interface GlowPageProps {
 
 const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
   const [showChat, setShowChat] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [bounds, setBounds] = useState<Bounds>({
     left: 0,
     top: 0,
@@ -22,7 +24,7 @@ const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
     height: window.innerHeight,
   });
 
-  // 1) Flip to chat after your “pulse” duration
+  // 1) Flip to chat after your "pulse" duration
   useEffect(() => {
     const t = window.setTimeout(() => setShowChat(true), glowDuration);
     return () => clearTimeout(t);
@@ -34,72 +36,91 @@ const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
       chrome.system.display
         .getInfo()
         .then((displays) => {
-          // pick the primary display (or the first one)
-          const primary = displays.find(d => d.isPrimary) || displays[0];
+          const primary = displays.find((d) => d.isPrimary) || displays[0];
           setBounds(primary.bounds);
         })
         .catch(console.error);
     }
   }, []);
 
-  const borderStyle: React.CSSProperties = {
-    position: 'absolute',
-    left: bounds.left,
-    top: bounds.top,
-    width: bounds.width,
-    height: bounds.height,
-    border: '4px solid rgba(34,211,238,0.7)',
-    borderRadius: 36,
-    boxShadow: '0 0 40px 0 #22d3eecc',
-    pointerEvents: 'none',
-    zIndex: 10,
+  const handleButtonClick = (action: string) => {
+    console.log("Button clicked:", action);
+    // Handle different actions here
+  };
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      console.log("Search:", searchQuery);
+      // Handle search here
+    }
   };
 
   return (
     <div
       style={{
-        position: 'relative',
-        width: bounds.width,
-        height: bounds.height,
-        overflow: 'hidden',
-        background: '#101914',
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        boxSizing: "border-box",
+        backgroundColor: "rgba(16, 25, 20, 0.95)",
+        pointerEvents: "all",
+        zIndex: 999999,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      {/* full-screen glow border */}
-      <div style={borderStyle} />
-
-      {/* your "body" sits on top of the border */}
-      <main
-        style={{
-          position: 'relative',
-          zIndex: 20,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          padding: 24,
-        }}
-      >
-        {!showChat ? (
-          <div
-            style={{
-              background: '#101914',
-              border: '2px solid rgba(34,211,238,0.4)',
-              borderRadius: 32,
-              padding: '1rem 1.5rem',
-              textAlign: 'center',
-            }}
-          >
-            <h2 style={{ color: '#22d3ee', marginBottom: 8 }}>Scanning the page…</h2>
-            <p style={{ color: '#94a3b8' }}>Take a breath while we analyze.</p>
+      {!showChat ? (
+        <div className="pause-scanning-container">
+          <h2 className="pause-scanning-title">Scanning the page…</h2>
+          <p className="pause-scanning-text">Take a breath while we analyze.</p>
+        </div>
+      ) : (
+        <div className="pause-chatbot-container">
+          <img
+            src={chrome.runtime.getURL("icons/logo-dark.png")}
+            alt="Pause"
+            className="pause-logo"
+          />
+          <h1 className="pause-title">
+            Let's <em>pause</em> and step back,
+          </h1>
+          <h2 className="pause-subtitle">What can I assist you with?</h2>
+          <div className="pause-buttons">
+            <button
+              className="pause-button"
+              onClick={() => handleButtonClick("quotes")}
+            >
+              Get Some Quotes
+            </button>
+            <button
+              className="pause-button"
+              onClick={() => handleButtonClick("audio")}
+            >
+              Listen to Audio
+            </button>
+            <button
+              className="pause-button"
+              onClick={() => handleButtonClick("nature")}
+            >
+              Picture Nature
+            </button>
           </div>
-        ) : (
+          <input
+            type="text"
+            className="pause-search"
+            placeholder="Type here ..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={handleSearch}
+          />
           <ChatBot />
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 };
