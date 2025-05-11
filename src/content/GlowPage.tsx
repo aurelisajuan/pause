@@ -1,68 +1,105 @@
-import React, { useEffect, useState } from "react";
-import ChatBot from "../popup/ChatBot";
-import "../styles.css";
+import React, { useEffect, useState } from 'react';
+import ChatBot from '../popup/ChatBot';
+import '../styles.css';
 
-type Bounds = { left: number; top: number; width: number; height: number };
+interface Bounds {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 interface GlowPageProps {
-  glowDuration?: number /* ms */;
+  glowDuration?: number; // ms
 }
 
 const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
   const [showChat, setShowChat] = useState(false);
-  const [bounds, setBounds] = useState<Bounds | null>(null);
+  const [bounds, setBounds] = useState<Bounds>({
+    left: 0,
+    top: 0,
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
-  // After glowDuration, reveal the chat UI
+  // 1) Flip to chat after your “pulse” duration
   useEffect(() => {
-    const id = window.setTimeout(() => setShowChat(true), glowDuration);
-    return () => window.clearTimeout(id);
+    const t = window.setTimeout(() => setShowChat(true), glowDuration);
+    return () => clearTimeout(t);
   }, [glowDuration]);
 
-  // Measure the scan target (#search or body)
+  // 2) Query chrome.system.display
   useEffect(() => {
-    const target = document.querySelector("#search") || document.body;
-    const rect = target.getBoundingClientRect();
-    setBounds({
-      left: rect.left + window.scrollX,
-      top: rect.top + window.scrollY,
-      width: rect.width,
-      height: rect.height,
-    });
+    if (chrome.system?.display?.getInfo) {
+      chrome.system.display
+        .getInfo()
+        .then((displays) => {
+          // pick the primary display (or the first one)
+          const primary = displays.find(d => d.isPrimary) || displays[0];
+          setBounds(primary.bounds);
+        })
+        .catch(console.error);
+    }
   }, []);
+
+  const borderStyle: React.CSSProperties = {
+    position: 'absolute',
+    left: bounds.left,
+    top: bounds.top,
+    width: bounds.width,
+    height: bounds.height,
+    border: '4px solid rgba(34,211,238,0.7)',
+    borderRadius: 36,
+    boxShadow: '0 0 40px 0 #22d3eecc',
+    pointerEvents: 'none',
+    zIndex: 10,
+  };
 
   return (
     <div
-      className={`fixed inset-0 w-screen h-screen ${
-        showChat ? "bg-black/60" : "bg-black/80"
-      } z-[999999] pointer-events-none`}
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        zIndex: 999999,
-        pointerEvents: "none",
+        position: 'relative',
+        width: bounds.width,
+        height: bounds.height,
+        overflow: 'hidden',
+        background: '#101914',
       }}
     >
-      {/* Pulsing highlight */}
-      {!showChat && bounds && (
-        <div
-          className="absolute border-[3px] border-cyan-400/80 rounded-lg animate-pulse box-border"
-          style={{
-            left: bounds.left,
-            top: bounds.top,
-            width: bounds.width,
-            height: bounds.height,
-          }}
-        />
-      )}
+      {/* full-screen glow border */}
+      <div style={borderStyle} />
 
-      {/* Chat panel */}
-      {showChat && (
-        <div className="fixed inset-0 bg-[#1f292e] pointer-events-auto overflow-hidden">
+      {/* your "body" sits on top of the border */}
+      <main
+        style={{
+          position: 'relative',
+          zIndex: 20,
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          padding: 24,
+        }}
+      >
+        {!showChat ? (
+          <div
+            style={{
+              background: '#101914',
+              border: '2px solid rgba(34,211,238,0.4)',
+              borderRadius: 32,
+              padding: '1rem 1.5rem',
+              textAlign: 'center',
+            }}
+          >
+            <h2 style={{ color: '#22d3ee', marginBottom: 8 }}>Scanning the page…</h2>
+            <p style={{ color: '#94a3b8' }}>Take a breath while we analyze.</p>
+          </div>
+        ) : (
           <ChatBot />
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 };
