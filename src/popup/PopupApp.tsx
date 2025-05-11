@@ -2,9 +2,11 @@ import React from "react";
 import "../styles.css";
 import GlowPage from "../content/GlowPage";
 
+
 const PopupApp: React.FC = () => {
   const [showGlow, setShowGlow] = React.useState(false);
   const [glowDuration, setGlowDuration] = React.useState(3000);
+
 
   const handleGetStarted = async () => {
     // Call backend to get glow duration
@@ -22,9 +24,10 @@ const PopupApp: React.FC = () => {
       // Send a message to the content script
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]?.id) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: "startPause" });
+          chrome.tabs.sendMessage(tabs[0].id, { action: "startScan" });
         }
       });
+  
 
     setShowGlow(true);
   };
@@ -74,7 +77,7 @@ const PopupApp: React.FC = () => {
 
           <button
             className="mt-8 w-[65%] py-3 rounded-full border-4 border-cyan-400 bg-[#4BAABE] bg-opacity-50 text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors"
-            onClick={handleGetStarted} id="takePause"
+            onClick={handleGetStarted} id="scanPage"
           >
             Get Started
           </button>

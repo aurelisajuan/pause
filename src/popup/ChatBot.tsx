@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GEMINI_API_KEY } from '../../config';
+import { GEMINI_API_KEY } from '../config';
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
