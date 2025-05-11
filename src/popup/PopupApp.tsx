@@ -45,18 +45,7 @@ const PopupApp: React.FC = () => {
         <div className="mt-16 mb-8 w-[90%] max-w-md bg-[#101914] rounded-[32px] flex flex-col items-center px-6 py-8">
           {/* Logo/Title */}
           <div className="flex items-center justify-center mb-2">
-            <span className="text-white text-6xl font-extrabold tracking-widest">
-              PA
-            </span>
-            <span
-              className="mx-2 flex items-center justify-center w-16 h-16 rounded-full border-4 border-cyan-400 text-cyan-400 text-4xl font-extrabold"
-              style={{ boxShadow: "0 0 0 4px #101914" }}
-            >
-              &#10073;&#10073;
-            </span>
-            <span className="text-white text-6xl font-extrabold tracking-widest">
-              SE
-            </span>
+          <img src="images/logo.png" alt="Pause Logo" className="w-32 h-32" />
           </div>
 
           <div className="w-full flex flex-col items-start mb-2">
