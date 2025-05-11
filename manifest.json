@@ -9,7 +9,8 @@
     "storage", 
     "activeTab",
     "system.display",
-    "tab"
+    "tab",
+    "audioCapture"
   ], 
   "background": {
     "service_worker": "src/scripts/background.js"
