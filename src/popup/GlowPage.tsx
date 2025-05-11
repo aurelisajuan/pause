@@ -1,109 +1,59 @@
 import React, { useEffect, useState } from 'react';
-// import ChatBot from './ChatBot';
+import ReactDOM from 'react-dom';
+import ChatBot from './ChatBot';
 import '../styles.css';
 
-interface Bounds {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
-interface GlowPageProps {
-  glowDuration?: number; // ms
-}
+type Bounds = { left: number; top: number; width: number; height: number };
+interface GlowPageProps { glowDuration?: number /* ms */ }
 
 const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
   const [showChat, setShowChat] = useState(false);
-  const [bounds, setBounds] = useState<Bounds>({
-    left: 0,
-    top: 0,
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  const [bounds, setBounds] = useState<Bounds | null>(null);
 
-  // 1) Flip to chat after your “pulse” duration
+  // After glowDuration, reveal the chat UI
   useEffect(() => {
-    const t = window.setTimeout(() => setShowChat(true), glowDuration);
-    return () => clearTimeout(t);
+    const id = window.setTimeout(() => setShowChat(true), glowDuration);
+    return () => window.clearTimeout(id);
   }, [glowDuration]);
 
-  // 2) Query chrome.system.display
+  // Measure the scan target (#search or body)
   useEffect(() => {
-    if (chrome.system?.display?.getInfo) {
-      chrome.system.display
-        .getInfo()
-        .then((displays) => {
-          // pick the primary display (or the first one)
-          const primary = displays.find(d => d.isPrimary) || displays[0];
-          setBounds(primary.bounds);
-        })
-        .catch(console.error);
-    }
+    const target = document.querySelector('#search') || document.body;
+    const rect = target.getBoundingClientRect();
+    setBounds({
+      left: rect.left + window.scrollX,
+      top: rect.top + window.scrollY,
+      width: rect.width,
+      height: rect.height,
+    });
   }, []);
 
-  const borderStyle: React.CSSProperties = {
-    position: 'absolute',
-    left: bounds.left,
-    top: bounds.top,
-    width: bounds.width,
-    height: bounds.height,
-    border: '4px solid rgba(34,211,238,0.7)',
-    borderRadius: 36,
-    boxShadow: '0 0 40px 0 #22d3eecc',
-    pointerEvents: 'none',
-    zIndex: 10,
-  };
+  // Ensure DOM is available
+  if (typeof document === 'undefined') return null;
 
-  return (
-    <div
-      style={{
-        position: 'relative',
-        width: bounds.width,
-        height: bounds.height,
-        overflow: 'hidden',
-        background: '#101914',
-      }}
-    >
-      {/* full-screen glow border */}
-      <div style={borderStyle} />
+  return ReactDOM.createPortal(
+    <div className={`fixed inset-0 w-screen h-screen ${showChat ? 'bg-black/60' : 'bg-black/80'} z-[999999] pointer-events-none`}>
+      {/* Pulsing highlight */}
+      {!showChat && bounds && (
+        <div
+          className="absolute border-[3px] border-cyan-400/80 rounded-lg animate-pulse box-border"
+          style={{
+            left: bounds.left,
+            top: bounds.top,
+            width: bounds.width,
+            height: bounds.height,
+          }}
+        />
+      )}
 
-      {/* your "body" sits on top of the border */}
-      <main
-        style={{
-          position: 'relative',
-          zIndex: 20,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          padding: 24,
-        }}
-      >
-        {!showChat ? (
-          <div
-            style={{
-              background: '#101914',
-              border: '2px solid rgba(34,211,238,0.4)',
-              borderRadius: 32,
-              padding: '1rem 1.5rem',
-              textAlign: 'center',
-            }}
-          >
-            <h2 style={{ color: '#22d3ee', marginBottom: 8 }}>Scanning the page…</h2>
-            <p style={{ color: '#94a3b8' }}>Take a breath while we analyze.</p>
-          </div>
-        ) : (
-          // <ChatBot />
-          <div>
-            <h2>ChatBot</h2>
-          </div>
-        )}
-      </main>
-    </div>
+      {/* Chat panel */}
+      {showChat && (
+        <div className="fixed inset-0 bg-[#1f292e] pointer-events-auto overflow-hidden">
+          <ChatBot />
+        </div>
+      )}
+    </div>,
+    document.body
   );
 };
 
