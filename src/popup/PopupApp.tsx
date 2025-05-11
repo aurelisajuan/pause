@@ -67,7 +67,7 @@ const PopupApp: React.FC = () => {
 
           <button
             className="mt-8 w-[65%] py-3 rounded-full border-4 border-cyan-400 bg-[#4BAABE] bg-opacity-50 text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors"
-            onClick={handleGetStarted}
+            onClick={handleGetStarted} id="takePause"
           >
             Get Started
           </button>
