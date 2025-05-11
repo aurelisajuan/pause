@@ -1,103 +1,313 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GEMINI_API_KEY } from '../config';
+import React, {
+    useState,
+    useRef,
+    useEffect,
+    useCallback,
+} from "react";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GEMINI_API_KEY } from "../config";
+import "../styles.css";
 
-interface Message { role: 'user' | 'assistant'; content: string }
+interface Message {
+    role: "user" | "assistant";
+    content: string;
+}
+
+interface ConversationContext {
+    currentTopic: string;
+    userMood: string;
+    lastActivity: string;
+    suggestedNextSteps: string[];
+    isSpeaking: boolean;
+    isListening: boolean;
+}
 
 const SYSTEM_INSTRUCTION = `
-    You are a professional mindfulness assistant therapist focused on helping users take mindful pauses during their digital life.
-    Your user right now has been detected of having a digital addiction/ panic attack/ too much screen time.
-    Your goal is to help users understand the importance of taking breaks, managing screen time, and maintaining digital wellbeing.
-    Explain concepts clearly, simply, and encouragingly. Do not mention you are an AI model.
+    You are a warm, empathetic mindfulness assistant focused on having natural conversations with users about their digital wellbeing.
+    Your goal is to create a comfortable, supportive space where users can discuss their feelings about screen time and digital habits.
 
-    You offer the following services by providing text-based responses:
+    Conversation Guidelines:
+    1. Always maintain a warm, friendly tone
+    2. Ask follow-up questions to show you're listening and understanding
+    3. Share personal-sounding observations (e.g., "I notice you seem...")
+    4. Validate user feelings before offering suggestions
+    5. Use natural transitions between topics
+    6. Remember and reference previous parts of the conversation
 
-    1.  **Breathing Exercises:**
-        * When a user asks for a breathing exercise, provide simple, step-by-step text instructions for a mindfulness breathing technique (e.g., box breathing, 4-7-8 breathing, or a simple deep breath count).
-        * Example structure: "Let's try a simple breathing exercise. 1. Sit comfortably. 2. Breathe in slowly through your nose for a count of 4. 3. Hold your breath for a count of 4. 4. Exhale slowly through your mouth for a count of 4. Repeat this a few times."
-        * You can offer to guide a text-based countdown if the user asks, like: "Okay, let's begin. Breathe in... 2... 3... 4... Hold... 2... 3... 4... Breathe out... 2... 3... 4... Pause."
-        * State clearly that you cannot provide actual audio or interactive timers.
+    Key Conversation Flows:
+    1. Emotional Check-ins:
+        - Ask how they're feeling about their screen time
+        - Validate their emotions
+        - Explore underlying causes gently
 
-    2.  **Motivational Quotes:**
-        * When a user asks for a motivational quote, share one relevant to digital wellbeing, mindfulness, taking breaks, or an encouraging general life quote.
-        * Example: "Here's a thought: 'The present moment is filled with joy and happiness. If you are attentive, you will see it.' - Thich Nhat Hanh."
+    2. Mindful Moments:
+        - Guide through brief mindfulness exercises
+        - Check in on their experience
+        - Adjust based on their feedback
 
-    3.  **Calming Nature Imagery (Descriptive):**
-        * When a user asks for calming nature imagery, describe a peaceful nature scene in text to help them visualize it.
-        * Example: "Let's visualize a calming scene. Imagine you are standing by a still, clear lake at dawn. The air is cool and fresh. Mist gently rises from the water's surface. Across the lake, you see tall pine trees, their silhouettes dark against the soft pink and orange hues of the sunrise. The only sounds are the distant calls of birds and the soft lapping of water against the shore. Feel the peace of this moment."
-        * State clearly that you cannot show actual images.
+    3. Progress Discussions:
+        - Remember their goals
+        - Celebrate small wins
+        - Problem-solve challenges together
 
-    After providing any service, always ask the user something like, "Would you like to try another activity, or is there anything else I can assist you with?"
-    When the conversation seems to be ending, or if the user indicates they are finished, conclude with a brief, encouraging phrase such as "Pause.", "Remember to take your mindful moments.", or "Be well."
+    4. Practical Tips:
+        - Offer suggestions naturally in conversation
+        - Share relevant mindfulness techniques
+        - Provide gentle accountability
+
+    Always maintain a natural conversation flow, asking questions and showing genuine interest in their responses.
+    End responses with open questions or gentle prompts to continue the conversation.
 `;
 
 const ChatBot: React.FC = () => {
-    const [messages, setMessages] = useState<Message[]>([{
-        role: 'assistant',
-        content: `Hi! I'm your mindfulness assistant. I can help you with:\n1. Breathing exercises\n2. Motivational quotes\n3. Calming nature imagery\n\nHow can I assist you today?`,
-    }]);
-    const [input, setInput] = useState('');
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
     const [chatSession, setChatSession] = useState<any>(null);
+    const [context, setContext] = useState<ConversationContext>({
+        currentTopic: "greeting",
+        userMood: "unknown",
+        lastActivity: "none",
+        suggestedNextSteps: [],
+        isSpeaking: false,
+        isListening: false,
+    });
+
     const endRef = useRef<HTMLDivElement>(null);
+    const recognitionRef = useRef<any>(null);
+    const synth = window.speechSynthesis;
 
-    useEffect(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages, isLoading]);
-
+    // 1) Auto-scroll on new messages/loading
     useEffect(() => {
-        if (!GEMINI_API_KEY) {
-        setError('Missing GEMINI_API_KEY in config.ts');
-        return;
-        }
-        try {
-        const ai = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const session = model.startChat({
-            history: [
-            { role: 'user', parts: [{ text: SYSTEM_INSTRUCTION }] },
-            { role: 'model', parts: [{ text: "Instruction understood. Ready to guide users." }] }
-            ],
-            generationConfig: { maxOutputTokens: 1000, temperature: 0.7, topK: 1, topP: 1 }
-        });
-        setChatSession(session);
-        } catch (e) {
-        console.error(e);
-        setError('Failed to initialize AI client.');
-        }
-    }, []);
+        endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages, isLoading]);
 
-    const sendMessage = async () => {
-        const text = input.trim(); if (!text || isLoading || !chatSession) return;
-        setMessages(m => [...m, { role: 'user', content: text }]);
-        setInput(''); setIsLoading(true); setError(null);
+    // 2) Initialize Gemini and seed initial greeting
+    useEffect(() => {
+        (async () => {
+        if (!GEMINI_API_KEY) {
+            setError("Missing GEMINI_API_KEY in config.");
+            return;
+        }
         try {
-        const result = await chatSession.sendMessage(text);
-        const res = await result.response;
-        const reply = res.text();
-        setMessages(m => [...m, { role: 'assistant', content: reply }]);
+            const ai = new GoogleGenerativeAI(GEMINI_API_KEY);
+            const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const session = await model.startChat({
+            history: [
+                { role: "user", parts: [{ text: SYSTEM_INSTRUCTION }] },
+            ],
+            generationConfig: {
+                maxOutputTokens: 800,
+                temperature: 0.8,
+                topK: 40,
+                topP: 0.95,
+            },
+            });
+            setChatSession(session);
+
+            // seed initial assistant message & speak it
+            const greeting =
+            "Hi there! I’m your mindfulness companion. How are you feeling about your screen time today?";
+            setMessages([{ role: "assistant", content: greeting }]);
+            setTimeout(() => speakText(greeting), 500);
         } catch (e: any) {
-        console.error(e);
-        const msg = e.message || 'Unknown error';
-        setError(msg);
-        setMessages(m => [...m, { role: 'assistant', content: `Error: ${msg}` }]);
-        } finally { setIsLoading(false) }
+            console.error(e);
+            setError("Failed to initialize AI session.");
+        }
+        })();
+    }, []); // empty deps
+
+    // 3) Text-to-speech with jitter for naturalness
+    const speakText = useCallback(
+        (raw: string) => {
+        if (!raw || synth.speaking || context.isListening) return;
+        const text = raw.replace(/\s+/g, " ").trim();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.pitch = 1 + (Math.random() * 0.2 - 0.1);
+        utterance.rate = 1 + (Math.random() * 0.2 - 0.1);
+        utterance.volume = 1;
+        const voice = synth
+            .getVoices()
+            .find((v) =>
+            /Samantha|Google US English Female|Female/.test(v.name)
+            );
+        if (voice) utterance.voice = voice;
+        utterance.onstart = () =>
+            setContext((c) => ({ ...c, isSpeaking: true }));
+        utterance.onend = () =>
+            setContext((c) => ({ ...c, isSpeaking: false }));
+        utterance.onerror = () =>
+            setContext((c) => ({ ...c, isSpeaking: false }));
+        synth.cancel();
+        synth.speak(utterance);
+        },
+        [synth, context.isListening]
+    );
+
+    // 4) Update context heuristically
+    const updateContext = useCallback(
+        (userMsg: string, aiMsg: string) => {
+        setContext((c) => {
+            let topic = c.currentTopic,
+            mood = c.userMood,
+            last = c.lastActivity;
+
+            if (/feel|mood/i.test(userMsg)) topic = "emotional";
+            else if (/breath|exercise/i.test(userMsg))
+            topic = "mindful_exercise";
+
+            if (/stress|anxious/i.test(userMsg)) mood = "stressed";
+            else if (/happy|good/i.test(userMsg)) mood = "positive";
+
+            if (/breathe|exercise/i.test(aiMsg)) last = "breathing";
+
+            return { ...c, currentTopic: topic, userMood: mood, lastActivity: last };
+        });
+        },
+        []
+    );
+
+    // 5) sendMessage callback
+    const sendMessage = useCallback(
+        async (forced?: string) => {
+        const text = (forced ?? input).trim();
+        if (!text || isLoading || !chatSession) return;
+        if (synth.speaking) {
+            synth.cancel();
+            setContext((c) => ({ ...c, isSpeaking: false }));
+        }
+
+        setMessages((ms) => [...ms, { role: "user", content: text }]);
+        setInput("");
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const prompt = `
+                Topic: ${context.currentTopic}
+                Mood: ${context.userMood}
+
+                User: ${text}
+
+                Please respond warmly and ask a follow-up question.
+            `.trim();
+
+            const res = await chatSession.sendMessage(prompt);
+            const aiReply = await res.response.text();
+
+            setMessages((ms) => [
+            ...ms,
+            { role: "assistant", content: aiReply },
+            ]);
+            updateContext(text, aiReply);
+            speakText(aiReply);
+        } catch (e: any) {
+            console.error(e);
+            const msg = "Oops, something went wrong. Could we try again?";
+            setMessages((ms) => [
+            ...ms,
+            { role: "assistant", content: msg },
+            ]);
+            speakText(msg);
+        } finally {
+            setIsLoading(false);
+        }
+        },
+        [
+            chatSession,
+            context,
+            input,
+            isLoading,
+            synth,
+            speakText,
+            updateContext,
+        ]
+    );
+
+    // 6) SpeechRecognition setup
+    useEffect(() => {
+        const SR =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+        if (!SR) return console.warn("SpeechRecognition not supported");
+
+        const recog = new SR();
+        recognitionRef.current = recog;
+        recog.continuous = false;
+        recog.interimResults = false;
+        recog.lang = "en-US";
+
+        recog.onstart = () =>
+        setContext((c) => ({ ...c, isListening: true }));
+        recog.onend = () =>
+        setContext((c) => ({ ...c, isListening: false }));
+        recog.onerror = (ev: any) => {
+        console.error("SpeechRecognition error", ev);
+        setError(
+            ev.error === "not-allowed"
+            ? "Please allow microphone access."
+            : "Voice recognition error."
+        );
+        setContext((c) => ({ ...c, isListening: false }));
+        };
+        recog.onresult = (ev: any) => {
+        const transcript = ev.results[0][0].transcript;
+        setInput(transcript);
+        setTimeout(() => sendMessage(transcript), 500);
+        };
+
+        return () => recog.abort();
+    }, [sendMessage]);
+
+    // 7) startListening using chrome.audio
+    const startListening = () => {
+        setError(null);
+
+        try {
+            recognitionRef.current?.start();
+        } catch (e) {
+            console.error(e);
+            setError("Voice recognition not supported or failed to start.");
+        }
+    };
+
+    // 8) Stop TTS if user types
+    const onInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setInput(e.target.value);
+        if (synth.speaking) {
+        synth.cancel();
+        setContext((c) => ({ ...c, isSpeaking: false }));
+        }
     };
 
     return (
         <div className="flex flex-col w-[400px] h-[600px] bg-gray-900 rounded-xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
+            <h2 className="text-white font-semibold">
+            Mindfulness Assistant
+            </h2>
+        </div>
+
+        {/* Messages */}
         <div className="flex-1 p-4 overflow-y-auto space-y-3">
-            {messages.map((m,i) => (
+            {messages.map((m, i) => (
             <div
                 key={i}
-                className={`max-w-3/4 px-4 py-2 rounded-lg whitespace-pre-wrap ${
-                m.role === 'user'
-                    ? 'self-end bg-teal-400 text-black'
-                    : 'self-start bg-gray-700 text-white'
+                className={`max-w-[75%] px-4 py-2 rounded-lg whitespace-pre-wrap ${
+                m.role === "user"
+                    ? "self-end bg-teal-400 text-black"
+                    : "self-start bg-gray-700 text-white"
                 }`}
-            >{m.content}</div>
+            >
+                {m.content}
+            </div>
             ))}
             {isLoading && (
-            <div className="self-start bg-gray-700 text-white px-4 py-2 rounded-lg animate-pulse">
+            <div className="self-start animate-pulse bg-gray-700 text-white px-4 py-2 rounded-lg">
                 Thinking…
             </div>
             )}
@@ -109,22 +319,48 @@ const ChatBot: React.FC = () => {
             <div ref={endRef} />
         </div>
 
-        <div className="flex items-center p-4 bg-gray-800 border-t border-gray-700">
+        {/* Input & Controls */}
+        <div className="flex items-center p-4 bg-gray-800 border-t border-gray-700 space-x-2">
             <textarea
             rows={1}
             className="flex-1 bg-gray-700 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none"
-            placeholder="Type a message…"
+            placeholder={
+                context.isListening
+                ? "Listening…"
+                : "Type or 🎙️ to speak"
+            }
             value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-            disabled={!chatSession || isLoading}
+            onChange={onInputChange}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+                }
+            }}
+            disabled={isLoading || context.isListening}
             />
             <button
-            className="ml-2 bg-teal-400 text-black font-semibold px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={sendMessage}
-            disabled={!input.trim() || isLoading || !chatSession}
+            onClick={startListening}
+            className={`p-2 rounded-full transition ${
+                context.isListening
+                ? "bg-red-500"
+                : "bg-gray-700 hover:bg-gray-600"
+            }`}
+            disabled={isLoading}
+            title={
+                context.isListening
+                ? "Listening…"
+                : "Start voice input"
+            }
             >
-            {isLoading ? 'Sending…' : 'Send'}
+            🎙️
+            </button>
+            <button
+            onClick={() => sendMessage()}
+            disabled={!input.trim() || isLoading || context.isListening}
+            className="bg-teal-400 text-black px-4 py-2 rounded-lg disabled:opacity-50"
+            >
+            {isLoading ? "…" : "Send"}
             </button>
         </div>
         </div>

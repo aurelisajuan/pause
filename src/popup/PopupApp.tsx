@@ -1,7 +1,8 @@
 import React from "react";
 import "../styles.css";
 import GlowPage from "../content/GlowPage";
-
+import logo from "../../images/logo-dark.png";
+import landing from "../../images/landingBg.png";
 
 const PopupApp: React.FC = () => {
   const [showGlow, setShowGlow] = React.useState(false);
@@ -37,29 +38,20 @@ const PopupApp: React.FC = () => {
   }
 
   return (
-    <div className="w-[400px] flex flex-col justify-between items-center bg-[#101914] relative overflow-hidden">
-      {/* Glow border */}
-      <div
-        className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-[36px] border-4 border-cyan-400/70 shadow-2xl"
-        style={{ boxShadow: "0 0 40px 0 #22d3ee55" }}
-      />
+    <div 
+      className="w-[400px] flex flex-col justify-between items-center bg-[#101914] relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${landing})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
 
       <main className="relative z-10 w-full flex flex-col items-center justify-center flex-1">
-        <div className="mt-16 mb-8 w-[90%] max-w-md bg-[#101914] rounded-[32px] flex flex-col items-center px-6 py-8">
+        <div className="mt-12 mb-8 max-w-md flex flex-col items-center pt-8 pb-16">
           {/* Logo/Title */}
-          <div className="flex items-center justify-center mb-2">
-            <span className="text-white text-6xl font-extrabold tracking-widest">
-              PA
-            </span>
-            <span
-              className="mx-2 flex items-center justify-center w-16 h-16 rounded-full border-4 border-cyan-400 text-cyan-400 text-4xl font-extrabold"
-              style={{ boxShadow: "0 0 0 4px #101914" }}
-            >
-              &#10073;&#10073;
-            </span>
-            <span className="text-white text-6xl font-extrabold tracking-widest">
-              SE
-            </span>
+          <div className="flex items-center justify-center">
+            <img src={logo} alt="Pause Logo" width={320} height="auto" className="mb-2"/>
           </div>
 
           <div className="w-full flex flex-col items-start mb-2">
@@ -76,8 +68,8 @@ const PopupApp: React.FC = () => {
           </div>
 
           <button
-            className="mt-8 w-[65%] py-3 rounded-full border-4 border-cyan-400 bg-[#4BAABE] bg-opacity-50 text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors"
-            onClick={handleGetStarted} id="scanPage"
+            className="mt-8 w-[65%] py-3 rounded-full border-4 bg-[#4BAABE] bg-opacity-50 border-cyan-400 text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors"
+            onClick={handleGetStarted} id="takePause"
           >
             Get Started
           </button>
