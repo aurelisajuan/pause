@@ -32,4 +32,3 @@ extension-env.d.ts
 
 # Config files with sensitive data
 src/config.ts
-config.ts
