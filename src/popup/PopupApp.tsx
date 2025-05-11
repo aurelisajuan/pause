@@ -3,7 +3,7 @@ import "./styles.css";
 
 const PopupApp: React.FC = () => {
   return (
-    <div className="w-full h-screen min-h-[600px] flex flex-col justify-between items-center bg-[#101914] relative overflow-hidden">
+    <div className="w-[400px] flex flex-col justify-between items-center bg-[#101914] relative overflow-hidden">
       {/* Glow border */}
       <div
         className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-[36px] border-4 border-cyan-400/70 shadow-2xl"
