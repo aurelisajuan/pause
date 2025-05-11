@@ -8,13 +8,47 @@ const OVERLAY_STYLES = `
     100% { opacity: 1; transform: translateY(0); }
 }
 
+.pause-header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1.5rem;
+    z-index: 10;
+}
+
+.pause-close-button {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.pause-close-button:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: scale(1.1);
+}
+
+.pause-close-button svg {
+    width: 24px;
+    height: 24px;
+}
+
 .pause-chatbot-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 2rem;
     animation: pause-text-fade 0.5s ease-out;
@@ -27,69 +61,119 @@ const OVERLAY_STYLES = `
 
 .pause-title {
     color: white;
-    font-size: 2.5rem;
+    font-size: 3.5rem;
     font-weight: 500;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     text-align: center;
+    line-height: 1.2;
 }
 
 .pause-subtitle {
     color: white;
-    font-size: 2rem;
-    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
     text-align: center;
 }
 
 .pause-buttons {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
 .pause-button {
     background: transparent;
     border: 2px solid #22d3ee;
     color: white;
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 2rem;
     border-radius: 9999px;
-    font-size: 1rem;
+    font-size: 1.25rem;
     cursor: pointer;
     transition: all 0.2s;
+    min-width: 200px;
+    text-align: center;
 }
 
 .pause-button:hover {
-    background: rgba(34,211,238,0.1);
+    background: rgba(34,211,238,0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34,211,238,0.3);
 }
 
 .pause-search {
     width: 100%;
-    max-width: 600px;
-    background: rgba(0,0,0,0.3);
-    border: none;
+    max-width: 700px;
+    background: rgba(34,211,238,0.1);
+    border: 2px solid rgba(34,211,238,0.3);
     border-radius: 9999px;
-    padding: 1rem 1.5rem;
+    padding: 1.25rem 2rem;
     color: white;
-    font-size: 1rem;
-    margin-bottom: 2rem;
+    font-size: 1.25rem;
+    margin-bottom: 2.5rem;
+    transition: all 0.2s;
+}
+
+.pause-search:focus {
+    outline: none;
+    border-color: #22d3ee;
+    background: rgba(34,211,238,0.15);
+    box-shadow: 0 0 0 3px rgba(34,211,238,0.3);
 }
 
 .pause-search::placeholder {
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.6);
+}
+
+.transcript-toggle {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.transcript-toggle:hover {
+    color: white;
+}
+
+.transcript-toggle svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s;
+}
+
+.transcript-toggle.open svg {
+    transform: rotate(180deg);
 }
 
 .chat-messages {
     width: 100%;
-    max-width: 600px;
-    max-height: 300px;
+    max-width: 700px;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+    transition: all 0.3s ease-out;
+}
+
+.chat-messages.open {
+    max-height: 400px;
     overflow-y: auto;
     padding: 1rem;
 }
 
 .chat-message {
     margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
+    padding: 1rem 1.5rem;
     border-radius: 1rem;
     color: white;
+    font-size: 1.1rem;
+    line-height: 1.5;
 }
 
 .chat-message.user {
@@ -213,6 +297,13 @@ class ChatOverlay {
 
         // Add the content
         overlay.innerHTML = `
+            <div class="pause-header">
+                <button class="pause-close-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
             <div class="pause-chatbot-container">
                 <h1 class="pause-title">Let's <em>pause</em> and step back,</h1>
                 <h2 class="pause-subtitle">What can I assist you with?</h2>
@@ -222,6 +313,12 @@ class ChatOverlay {
                     <button class="pause-button" data-action="nature">Picture Nature</button>
                 </div>
                 <input type="text" class="pause-search" placeholder="Type here ...">
+                <button class="transcript-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                    Show Transcript
+                </button>
                 <div class="chat-messages"></div>
             </div>
         `;
@@ -241,6 +338,29 @@ class ChatOverlay {
                 const action = button.dataset.action;
                 this.handleButtonClick(action);
             });
+        });
+
+        // Add close button functionality
+        const closeButton = overlay.querySelector('.pause-close-button');
+        closeButton.addEventListener('click', () => {
+            this.hide();
+        });
+
+        // Add transcript toggle functionality
+        const transcriptToggle = overlay.querySelector('.transcript-toggle');
+        const chatMessages = overlay.querySelector('.chat-messages');
+        transcriptToggle.addEventListener('click', () => {
+            chatMessages.classList.toggle('open');
+            transcriptToggle.classList.toggle('open');
+            transcriptToggle.innerHTML = chatMessages.classList.contains('open') 
+                ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                   </svg>
+                   Hide Transcript`
+                : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                   </svg>
+                   Show Transcript`;
         });
 
         this.overlayElement = overlay;
