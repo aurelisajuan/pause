@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles.css";
-import GlowPage from "./GlowPage";
+import GlowPage from "../content/GlowPage";
 
 const PopupApp: React.FC = () => {
   const [showGlow, setShowGlow] = React.useState(false);

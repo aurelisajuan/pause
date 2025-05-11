@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
-import ChatBot from './ChatBot';
-import '../styles.css';
+import React, { useEffect, useState } from "react";
+import ChatBot from "../popup/ChatBot";
+import "../styles.css";
 
 type Bounds = { left: number; top: number; width: number; height: number };
-interface GlowPageProps { glowDuration?: number /* ms */ }
+interface GlowPageProps {
+  glowDuration?: number /* ms */;
+}
 
 const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
   const [showChat, setShowChat] = useState(false);
@@ -18,7 +19,7 @@ const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
 
   // Measure the scan target (#search or body)
   useEffect(() => {
-    const target = document.querySelector('#search') || document.body;
+    const target = document.querySelector("#search") || document.body;
     const rect = target.getBoundingClientRect();
     setBounds({
       left: rect.left + window.scrollX,
@@ -28,11 +29,21 @@ const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
     });
   }, []);
 
-  // Ensure DOM is available
-  if (typeof document === 'undefined') return null;
-
-  return ReactDOM.createPortal(
-    <div className={`fixed inset-0 w-screen h-screen ${showChat ? 'bg-black/60' : 'bg-black/80'} z-[999999] pointer-events-none`}>
+  return (
+    <div
+      className={`fixed inset-0 w-screen h-screen ${
+        showChat ? "bg-black/60" : "bg-black/80"
+      } z-[999999] pointer-events-none`}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 999999,
+        pointerEvents: "none",
+      }}
+    >
       {/* Pulsing highlight */}
       {!showChat && bounds && (
         <div
@@ -52,8 +63,7 @@ const GlowPage: React.FC<GlowPageProps> = ({ glowDuration = 3000 }) => {
           <ChatBot />
         </div>
       )}
-    </div>,
-    document.body
+    </div>
   );
 };
 
