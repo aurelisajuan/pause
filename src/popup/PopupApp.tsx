@@ -1,6 +1,8 @@
 import React from "react";
 import "../styles.css";
 import GlowPage from "../content/GlowPage";
+import logo from "../../images/logo-dark.png";
+import landing from "../../images/landingBg.png";
 
 const PopupApp: React.FC = () => {
   const [showGlow, setShowGlow] = React.useState(false);
@@ -34,18 +36,25 @@ const PopupApp: React.FC = () => {
   }
 
   return (
-    <div className="w-[400px] flex flex-col justify-between items-center bg-[#101914] relative overflow-hidden">
+    <div 
+      className="w-[400px] flex flex-col justify-between items-center bg-[#101914] relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${landing})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
       {/* Glow border */}
       <div
         className="absolute top-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-[36px] border-4 border-cyan-400/70 shadow-2xl"
-        style={{ boxShadow: "0 0 40px 0 #22d3ee55" }}
+        // style={{ boxShadow: "0 0 40px 0 #22d3ee55" }}
       />
 
       <main className="relative z-10 w-full flex flex-col items-center justify-center flex-1">
         <div className="mt-16 mb-8 w-[90%] max-w-md bg-[#101914] rounded-[32px] flex flex-col items-center px-6 py-8">
           {/* Logo/Title */}
           <div className="flex items-center justify-center mb-2">
-          <img src="images/logo.png" alt="Pause Logo" className="w-32 h-32" />
+            <img src={logo} alt="Pause Logo" width={128} height={128} className="w-72 h-32" />
           </div>
 
           <div className="w-full flex flex-col items-start mb-2">
@@ -62,7 +71,7 @@ const PopupApp: React.FC = () => {
           </div>
 
           <button
-            className="mt-8 w-[65%] py-3 rounded-full border-4 border-cyan-400 bg-[#4BAABE] bg-opacity-50 text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors"
+            className="mt-8 w-[65%] py-3 rounded-full border-4 border-cyan-400 text-white text-xl font-bold shadow-lg hover:bg-cyan-400 hover:text-[#101914] transition-colors"
             onClick={handleGetStarted} id="takePause"
           >
             Get Started

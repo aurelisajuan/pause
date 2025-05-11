@@ -5,19 +5,13 @@
   "version": "1.0",
   "description": "A mindfulness assistant to help you take mindful pauses during your digital life",
   "author": "BaNaNa",
-  "permissions": [
-    "storage", 
-    "activeTab",
-    "system.display",
-    "tab",
-    "audio"
-  ], 
+  "permissions": ["storage", "activeTab", "system.display", "tab", "audio"],
   "background": {
     "service_worker": "src/scripts/background.js"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"], 
+      "matches": ["<all_urls>"],
       "js": ["src/scripts/content.js"],
       "run_at": "document_idle"
     }
@@ -37,7 +31,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/*.png", "scripts/.*js", "styles/*.css"],
+      "resources": [
+        "images/*.png",
+        "icons/*.png",
+        "scripts/.*js",
+        "styles/*.css"
+      ],
       "matches": ["<all_urls>"]
     }
   ]
